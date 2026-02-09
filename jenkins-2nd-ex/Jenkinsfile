@@ -28,6 +28,13 @@ pipeline{
                 du -sch .
              '''
            } 
+        }   
+        stage('poll-scm-checkin'){
+           steps{
+             sh '''
+                echo "checking wheather poll scm works or not"
+             '''
+           } 
         }              
     }
 }
