@@ -21,6 +21,13 @@ pipeline{
                 df -kh
              '''
            } 
-        }        
+        }  
+        stage('disk-usage'){
+           steps{
+             sh '''
+                du -sch .
+             '''
+           } 
+        }              
     }
 }
