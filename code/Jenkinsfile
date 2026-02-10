@@ -1,7 +1,7 @@
 pipeline{
     agent any
     environment{
-        IMAGE_NAME = 'manojkrishnappa/md-devops-masterclass:${GIT_COMMIT}'
+        IMAGE_NAME = "manojkrishnappa/md-devops-masterclass:${GIT_COMMIT}"
     }
     stages{
         stage('Git-Checkout'){
@@ -14,7 +14,7 @@ pipeline{
             steps{
                 sh '''
                     printenv
-                    docker build -t ${IMAGE_NAME} . 
+                    docker build -t ${IMAGE_NAME} .
                 '''
             }
         }
