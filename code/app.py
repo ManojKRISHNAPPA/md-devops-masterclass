@@ -83,7 +83,7 @@ if submitted:
         # Video Section
         st.markdown('<h2 style="text-align:center; color:#0072E3;">🎥 Learn from These Videos!</h2>', unsafe_allow_html=True)
 
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3,col4 = st.columns(4)
         
         with col1:
             st.markdown('<p class="sub-title">MicroDegree Intro</p>', unsafe_allow_html=True)
@@ -92,8 +92,12 @@ if submitted:
         with col2:
             st.markdown('<p class="sub-title">Project Ideas Explained</p>', unsafe_allow_html=True)
             st.video("https://youtu.be/m3YFGPoefeM")
-
+        
         with col3:
+            st.markdown('<p class="sub-title">Prompt engineering</p>', unsafe_allow_html=True)
+            st.video("https://youtu.be/m7OiRsZ5nsk?si=v53M5Qz1eEXNkyJ9")
+
+        with col4:
             st.markdown('<p class="sub-title">More from MicroDegree Channel</p>', unsafe_allow_html=True)
             st.markdown("[➡️ Click to view videos](https://www.youtube.com/@MicroDegree/videos)")
 
