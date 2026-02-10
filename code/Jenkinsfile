@@ -21,12 +21,28 @@ pipeline{
             }
         }
 
-        stage('testing the image'){
+        // stage('testing the image'){
+        //     steps{
+        //         sh '''
+        //             docker kill c1
+        //             docker rm c1
+        //             docker run -it -d --name c1 -p 9001:8501 ${IMAGE_NAME}
+        //         '''
+        //     }
+        // }
+
+        stage('docker-hub-login'){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                }
+            }
+        }
+
+        stage('Pushing to Registry'){
             steps{
                 sh '''
-                    docker kill c1
-                    docker rm c1
-                    docker run -it -d --name c1 -p 9001:8501 ${IMAGE_NAME}
+                    docker push ${IMAGE_NAME}
                 '''
             }
         }
