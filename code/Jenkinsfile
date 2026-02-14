@@ -18,7 +18,7 @@ pipeline{
                     cd code/
                     docker build -t ${IMAGE_NAME} .
                 '''
-            }
+            }˜
         }
 
         // stage('testing the image'){
@@ -39,7 +39,7 @@ pipeline{
             }
         }
 
-        stage('Pushing to Registry'){
+        stage('Pushing to Registry'){˜
             steps{
                 sh '''
                     docker push ${IMAGE_NAME}
