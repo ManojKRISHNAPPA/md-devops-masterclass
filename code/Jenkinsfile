@@ -69,9 +69,13 @@ pipeline{
                         restrictKubeConfigAccess: false,
                         serverUrl: 'https://CF999C939872E1A7F31339FFF97198D3.gr7.us-west-2.eks.amazonaws.com'
                     ) {
-                        sh "cd code"
-                        sh "sed -i 's|replace|${IMAGE_NAME}|g' deployment.yaml"
-                        sh "kubectl apply -f deployment.yml -n ${NAMESPACE}"
+                        sh '''
+                          pwd
+                          cd code
+                          pwd
+                          sed -i 's|replace|${IMAGE_NAME}|g' deployment.yaml  
+                          kubectl apply -f deployment.yaml -n ${NAMESPACE}
+                        '''
                     }
                 }
             }
