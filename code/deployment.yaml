@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: microdegree-deploy
+  name: microdegree-svc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8501
+  selector:
+    app: microdegree-deploy
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: microdegree-deploy
+  name: microdegree-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microdegree-deploy
+  template:
+    metadata:
+      labels:
+        app: microdegree-deploy
+    spec:
+      containers:
+      - image: manojkrishnappa/mddevopsmasterclass:081cae069e1efd805ff98b4ce93935b3bb528211
+        name: cutom-image
+        ports:
+        - containerPort: 8501
