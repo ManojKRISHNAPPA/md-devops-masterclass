@@ -74,7 +74,7 @@ pipeline{
                           pwd
                           cd code
                           pwd
-                          sed -i 's|replace|${IMAGE_NAME}|g' deployment.yaml  
+                          sed -i "s|replace|${IMAGE_NAME}|g" deployment.yaml 
                           kubectl apply -f deployment.yaml -n ${NAMESPACE}
                         '''
                     }
