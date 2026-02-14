@@ -2,6 +2,8 @@ pipeline{
     agent any
     environment{
         IMAGE_NAME = "manojkrishnappa/mddevopsmasterclass:${GIT_COMMIT}"
+        AWS_REGION = "us-west-2"
+        CLUSTER_NAME = "itkannadigaru-cluster"
     }
     stages{
         stage('Git-Checkout'){
@@ -46,5 +48,48 @@ pipeline{
                 '''
             }
         }
+        stage('Cluster-Update') {
+                steps {
+                    sh '''
+                        aws eks update-kubeconfig \
+                        --region ${AWS_REGION} \
+                        --name ${CLUSTER_NAME}
+                    '''
+                }
+            }
+
+        stage('Deploying to EKS clsuter') {
+                steps {
+                    withKubeConfig(
+                        caCertificate: '',
+                        clusterName: 'itkannadigaru-cluster',
+                        contextName: '',
+                        credentialsId: 'kube',
+                        namespace: 'microdegree',
+                        restrictKubeConfigAccess: false,
+                        serverUrl: 'https://CF999C939872E1A7F31339FFF97198D3.gr7.us-west-2.eks.amazonaws.com'
+                    ) {
+                        sh "sed -i 's|replace|${IMAGE_NAME}|g' deployment.yml"
+                        sh "kubectl apply -f deployment.yml -n ${NAMESPACE}"
+                    }
+                }
+            }
+
+            stage('Verify the deployment') {
+                steps {
+                    withKubeConfig(
+                        caCertificate: '',
+                        clusterName: 'itkannadigaru-cluster',
+                        contextName: '',
+                        credentialsId: 'kube',
+                        namespace: 'microdegree',
+                        restrictKubeConfigAccess: false,
+                        serverUrl: 'https://CF999C939872E1A7F31339FFF97198D3.gr7.us-west-2.eks.amazonaws.com'
+                    ) {
+                        sh "kubectl get pods -n ${NAMESPACE}"
+                        sh "kubectl get svc -n ${NAMESPACE}"
+                    }
+                }
+            }        
     }
 }

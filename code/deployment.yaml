@@ -30,7 +30,7 @@ spec:
         app: microdegree-deploy
     spec:
       containers:
-      - image: manojkrishnappa/mddevopsmasterclass:081cae069e1efd805ff98b4ce93935b3bb528211
+      - image: replace
         name: cutom-image
         ports:
         - containerPort: 8501
