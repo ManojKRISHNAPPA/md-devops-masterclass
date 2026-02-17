@@ -3,7 +3,7 @@ pipeline{
     environment{
         IMAGE_NAME = "manojkrishnappa/mddevopsmasterclass:${GIT_COMMIT}"
         AWS_REGION = "us-west-2"
-        CLUSTER_NAME = "itkannadigaru-cluster"
+        CLUSTER_NAME = "microdegree"
         NAMESPACE = "microdegree"
     }
     stages{
@@ -63,12 +63,12 @@ pipeline{
                 steps {
                     withKubeConfig(
                         caCertificate: '',
-                        clusterName: 'itkannadigaru-cluster',
+                        clusterName: 'microdegree',
                         contextName: '',
                         credentialsId: 'kube',
                         namespace: 'microdegree',
                         restrictKubeConfigAccess: false,
-                        serverUrl: 'https://CF999C939872E1A7F31339FFF97198D3.gr7.us-west-2.eks.amazonaws.com'
+                        serverUrl: 'https://EE61CD4CEDDE06EE62180E7512EC234B.gr7.us-west-2.eks.amazonaws.com'
                     ) {
                         sh '''
                           pwd
@@ -85,12 +85,12 @@ pipeline{
                 steps {
                     withKubeConfig(
                         caCertificate: '',
-                        clusterName: 'itkannadigaru-cluster',
+                        clusterName: 'microdegree',
                         contextName: '',
                         credentialsId: 'kube',
                         namespace: 'microdegree',
                         restrictKubeConfigAccess: false,
-                        serverUrl: 'https://CF999C939872E1A7F31339FFF97198D3.gr7.us-west-2.eks.amazonaws.com'
+                        serverUrl: 'https://EE61CD4CEDDE06EE62180E7512EC234B.gr7.us-west-2.eks.amazonaws.com'
                     ) {
                         sh "kubectl get pods -n ${NAMESPACE}"
                         sh "kubectl get svc -n ${NAMESPACE}"
