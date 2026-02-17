@@ -43,13 +43,13 @@ pip install -r requirements.txt
 2. **Set up environment variable:**
 ```bash
 # On Linux/Mac:
-export DB_PASSWORD='Manoj7100'
+export DB_PASSWORD='yourpassword'
 
 # On Windows (PowerShell):
-$env:DB_PASSWORD='Manoj7100'
+$env:DB_PASSWORD='yourpassword'
 
 # On Windows (CMD):
-set DB_PASSWORD=Manoj7100
+set DB_PASSWORD=yourpassword
 ```
 
 Or create a `.env` file (copy from `.env.example`):
@@ -81,7 +81,7 @@ The application will be available at `http://localhost:8501`
 docker build -t microdegree-app .
 
 # Run with environment variable
-docker run -p 8501:8501 -e DB_PASSWORD='Manoj7100' microdegree-app
+docker run -p 8501:8501 -e DB_PASSWORD='yourpassword' microdegree-app
 ```
 
 ### 3. Kubernetes/EKS Deployment
