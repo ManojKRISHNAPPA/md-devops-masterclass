@@ -1,17 +1,33 @@
 import streamlit as st
+import os
+from database import create_users_table, register_user, authenticate_user, get_user_by_email
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="MicroDegree Registration",
+    page_title="MicroDegree Platform",
     layout="wide"
 )
 
+# ---------------- INITIALIZE DATABASE ----------------
+# Create users table if it doesn't exist
+if os.getenv('DB_PASSWORD'):
+    create_users_table()
+
 # ---------------- SESSION STATE ----------------
-if "registered" not in st.session_state:
-    st.session_state.registered = False
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "user_email" not in st.session_state:
+    st.session_state.user_email = None
+
+if "user_data" not in st.session_state:
+    st.session_state.user_data = None
 
 if "show_article" not in st.session_state:
     st.session_state.show_article = False
+
+if "page" not in st.session_state:
+    st.session_state.page = "login"
 
 # ---------------- CUSTOM CSS ----------------
 st.markdown("""
@@ -36,37 +52,128 @@ st.markdown("""
     border:2px solid #0072E3;
     box-shadow:0px 6px 18px rgba(0,0,0,0.15);
 }
+.profile-card {
+    padding:30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius:15px;
+    box-shadow:0px 6px 18px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
+}
 </style>
 """, unsafe_allow_html=True)
+
+# ---------------- HELPER FUNCTIONS ----------------
+def logout():
+    """Clear session state and logout user."""
+    st.session_state.logged_in = False
+    st.session_state.user_email = None
+    st.session_state.user_data = None
+    st.session_state.page = "login"
+    st.session_state.show_article = False
+    st.rerun()
 
 # ---------------- TITLE ----------------
 st.markdown('<p class="title">Welcome to MicroDegree 🚀</p>', unsafe_allow_html=True)
 
-# ---------------- REGISTRATION ----------------
-if not st.session_state.registered:
+# ---------------- LOGGED OUT VIEW ----------------
+if not st.session_state.logged_in:
 
-    with st.form("registration_form"):
-        st.write("### 📝 Enter Your Details")
-        name = st.text_input("Full Name")
-        email = st.text_input("Email Address")
-        phone = st.text_input("Phone Number")
-        about = st.text_area("What are you excited to learn?", max_chars=200)
+    # Check if DB_PASSWORD is set
+    if not os.getenv('DB_PASSWORD'):
+        st.error("⚠️ Database is not configured. Please set the DB_PASSWORD environment variable.")
+        st.stop()
 
-        submitted = st.form_submit_button("Register Now 🎉")
+    # Create tabs for Login and Register
+    tab1, tab2 = st.tabs(["🔑 Login", "📝 Register"])
 
-    if submitted:
-        if not name or not email:
-            st.error("Please fill required fields!")
-        else:
-            st.session_state.registered = True
-            st.session_state.name = name
-            st.session_state.email = email
-            st.rerun()
+    # ---------------- LOGIN TAB ----------------
+    with tab1:
+        st.markdown("### Login to Your Account")
 
-# ---------------- AFTER LOGIN ----------------
-if st.session_state.registered:
+        with st.form("login_form"):
+            login_email = st.text_input("Email Address", key="login_email")
+            login_password = st.text_input("Password", type="password", key="login_password")
+            login_submitted = st.form_submit_button("Login 🚀")
 
-    st.success(f"🎊 Welcome {st.session_state.name}! You are registered.")
+        if login_submitted:
+            if not login_email or not login_password:
+                st.error("Please enter both email and password!")
+            else:
+                with st.spinner("Authenticating..."):
+                    user_data = authenticate_user(login_email, login_password)
+
+                    if user_data:
+                        st.session_state.logged_in = True
+                        st.session_state.user_email = login_email
+                        st.session_state.user_data = user_data
+                        st.success(f"Welcome back, {user_data['full_name']}! 🎉")
+                        st.rerun()
+                    else:
+                        st.error("Invalid email or password. Please try again.")
+
+    # ---------------- REGISTER TAB ----------------
+    with tab2:
+        st.markdown("### Create Your Account")
+
+        with st.form("registration_form"):
+            reg_name = st.text_input("Full Name *", key="reg_name")
+            reg_email = st.text_input("Email Address *", key="reg_email")
+            reg_password = st.text_input("Password *", type="password", key="reg_password")
+            reg_password_confirm = st.text_input("Confirm Password *", type="password", key="reg_password_confirm")
+            reg_phone = st.text_input("Phone Number (Optional)", key="reg_phone")
+
+            reg_submitted = st.form_submit_button("Register Now 🎉")
+
+        if reg_submitted:
+            # Validation
+            if not reg_name or not reg_email or not reg_password:
+                st.error("Please fill all required fields (marked with *)!")
+            elif reg_password != reg_password_confirm:
+                st.error("Passwords do not match!")
+            elif len(reg_password) < 6:
+                st.error("Password must be at least 6 characters long!")
+            else:
+                with st.spinner("Creating your account..."):
+                    success, message = register_user(
+                        email=reg_email,
+                        password=reg_password,
+                        full_name=reg_name,
+                        phone_number=reg_phone if reg_phone else None
+                    )
+
+                    if success:
+                        st.success("🎊 Registration successful! Please login with your credentials.")
+                    else:
+                        st.error(f"Registration failed: {message}")
+
+# ---------------- LOGGED IN VIEW ----------------
+else:
+    # Get fresh user data
+    if not st.session_state.user_data:
+        st.session_state.user_data = get_user_by_email(st.session_state.user_email)
+
+    user = st.session_state.user_data
+
+    # ---------------- TOP BAR WITH LOGOUT ----------------
+    col1, col2 = st.columns([6, 1])
+    with col2:
+        if st.button("Logout 🚪", type="primary"):
+            logout()
+
+    st.markdown("---")
+
+    # ---------------- PROFILE CARD ----------------
+    st.markdown("## 👤 Your Profile")
+
+    st.markdown(f"""
+    <div class="profile-card">
+        <h2>Hello, {user['full_name']}! 👋</h2>
+        <p><strong>📧 Email:</strong> {user['email']}</p>
+        <p><strong>📱 Phone:</strong> {user['phone_number'] if user.get('phone_number') else 'Not provided'}</p>
+        <p><strong>📅 Member Since:</strong> {user['created_at'].strftime('%B %d, %Y') if user.get('created_at') else 'N/A'}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -129,13 +236,14 @@ Suggests smaller base images.
 Updates Helm and generates release notes.
 
 ### 🔮 Future Vision
-✔ Self-healing pipelines  
-✔ AI-generated Terraform  
-✔ Auto rollback  
-✔ Cost optimization  
+✔ Self-healing pipelines
+✔ AI-generated Terraform
+✔ Auto rollback
+✔ Cost optimization
 """)
 
         if st.button("Close Article ❌"):
             st.session_state.show_article = False
+            st.rerun()
 
         st.markdown('</div>', unsafe_allow_html=True)

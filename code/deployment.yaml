@@ -34,3 +34,9 @@ spec:
         name: cutom-image
         ports:
         - containerPort: 8501
+        env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: microdegree-secrets
+              key: db-password
