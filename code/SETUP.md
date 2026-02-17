@@ -55,7 +55,7 @@ set DB_PASSWORD=yourpassword
 Or create a `.env` file (copy from `.env.example`):
 ```bash
 cp .env.example .env
-# Edit .env and set DB_PASSWORD=Manoj7100
+# Edit .env and set DB_PASSWORD=yourpassword
 ```
 
 3. **Initialize the database (first time only):**
