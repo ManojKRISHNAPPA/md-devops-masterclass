@@ -12,9 +12,7 @@ def get_db_connection():
             port=5432,
             database='postgres',
             user='postgres',
-            password=os.getenv('DB_PASSWORD', ''),
-            sslmode='verify-full',
-            sslrootcert=os.getenv('DB_SSL_ROOT_CERT', '/certs/global-bundle.pem')
+            password=os.getenv('DB_PASSWORD', '')
         )
         return conn
     except psycopg2.Error as err:
@@ -51,7 +49,7 @@ def create_users_table():
 
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt."""
-    salt = bcrypt.gensalt()
+    salt = bcrypt.gensalt(rounds=4)
     hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed.decode('utf-8')
 
