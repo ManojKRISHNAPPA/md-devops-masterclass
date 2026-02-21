@@ -1,21 +1,23 @@
-import mysql.connector
+import psycopg2
+import psycopg2.extras
 import bcrypt
 import os
 from typing import Optional, Dict
 
 def get_db_connection():
-    """Create and return a MySQL database connection."""
+    """Create and return a PostgreSQL database connection."""
     try:
-        conn = mysql.connector.connect(
-            host='microdegree.cfoqwaayg09s.us-west-2.rds.amazonaws.com',
-            port=3306,
-            database='mysql',
-            user='admin',
+        conn = psycopg2.connect(
+            host='itkanndigaru.c83m8iawyz1n.us-east-1.rds.amazonaws.com',
+            port=5432,
+            database='postgres',
+            user='postgres',
             password=os.getenv('DB_PASSWORD', ''),
-            ssl_disabled=False,
+            sslmode='verify-full',
+            sslrootcert=os.getenv('DB_SSL_ROOT_CERT', '/certs/global-bundle.pem')
         )
         return conn
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         print(f"Database connection error: {err}")
         return None
 
@@ -29,20 +31,19 @@ def create_users_table():
         cursor = conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 email VARCHAR(255) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL,
                 full_name VARCHAR(255) NOT NULL,
                 phone_number VARCHAR(20),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                INDEX idx_email (email)
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
         conn.commit()
         cursor.close()
         conn.close()
         return True
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         print(f"Error creating table: {err}")
         if conn:
             conn.close()
@@ -88,7 +89,7 @@ def register_user(email: str, password: str, full_name: str, phone_number: str =
         conn.close()
         return True, "Registration successful"
 
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         print(f"Error registering user: {err}")
         if conn:
             conn.close()
@@ -104,7 +105,7 @@ def authenticate_user(email: str, password: str) -> Optional[Dict]:
         return None
 
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(
             "SELECT id, email, password_hash, full_name, phone_number FROM users WHERE email = %s",
             (email,)
@@ -114,12 +115,12 @@ def authenticate_user(email: str, password: str) -> Optional[Dict]:
         conn.close()
 
         if user and verify_password(password, user['password_hash']):
-            # Remove password_hash from returned data
-            del user['password_hash']
-            return user
+            user_dict = dict(user)
+            del user_dict['password_hash']
+            return user_dict
         return None
 
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         print(f"Error authenticating user: {err}")
         if conn:
             conn.close()
@@ -132,7 +133,7 @@ def get_user_by_email(email: str) -> Optional[Dict]:
         return None
 
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(
             "SELECT id, email, full_name, phone_number, created_at FROM users WHERE email = %s",
             (email,)
@@ -140,9 +141,9 @@ def get_user_by_email(email: str) -> Optional[Dict]:
         user = cursor.fetchone()
         cursor.close()
         conn.close()
-        return user
+        return dict(user) if user else None
 
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         print(f"Error fetching user: {err}")
         if conn:
             conn.close()
