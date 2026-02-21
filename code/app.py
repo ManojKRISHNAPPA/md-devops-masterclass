@@ -10,8 +10,7 @@ st.set_page_config(
 
 # ---------------- INITIALIZE DATABASE ----------------
 # Create users table if it doesn't exist
-if os.getenv('DB_PASSWORD'):
-    create_users_table()
+
 
 # ---------------- SESSION STATE ----------------
 if "logged_in" not in st.session_state:
